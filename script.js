@@ -14,10 +14,11 @@ createApp({
         const currentMode = ref('focus'); 
         
         // 用來記錄這一次專注「是幾點開始的」，用於圖表標籤
-        // 這樣就算暫停，標籤也不會變，而且會一直是同一根長條
         const sessionStartTime = ref(null);
+        
+        // [新增] 用來記錄「預計結束的時間戳記」，解決切換視窗後變慢的問題
+        let targetEndTime = null;
 
-        // 讀取循環
         const savedCycle = localStorage.getItem('focus_cycle');
         const cycleCount = ref(savedCycle ? parseInt(savedCycle) : 1);
 
@@ -49,7 +50,6 @@ createApp({
             const lastDate = localStorage.getItem('last_record_date');
             const today = getTodayDateStr();
 
-            // 只有「跨日」才清空
             if (lastDate !== today) {
                 localStorage.setItem('last_record_date', today);
                 return [];
@@ -58,27 +58,20 @@ createApp({
         };
         const dailySessions = ref(loadDailySessions());
 
-        // 正式存檔（階段結束時呼叫）
         const recordFocusSession = (minutes) => {
             if (minutes <= 0) return;
 
             const today = getTodayDateStr();
-            // 使用「開始時間」作為標籤，如果沒有（例如直接調試）則用現在時間
             const timeLabel = sessionStartTime.value || new Date().toTimeString().slice(0,5);
 
-            // 更新週總量
             if (!weeklyHistory.value[today]) weeklyHistory.value[today] = 0;
             weeklyHistory.value[today] += minutes;
             localStorage.setItem('focus_history', JSON.stringify(weeklyHistory.value));
 
-            // 更新今日詳情 (變成永久長條)
             dailySessions.value.push({ time: timeLabel, duration: minutes });
             localStorage.setItem('today_sessions', JSON.stringify(dailySessions.value));
             
-            // 清除開始時間，準備下一次
             sessionStartTime.value = null;
-
-            // 強制重繪
             updateCharts('default');
         };
 
@@ -110,7 +103,7 @@ createApp({
             saveTasks();
         };
 
-        // --- 4. 番茄鐘邏輯 ---
+        // --- 4. 番茄鐘邏輯 (核心修改區) ---
         const modeText = computed(() => {
             if (currentMode.value === 'focus') return '🔥 深度專注模式';
             if (currentMode.value === 'short-break') return '☕ 短暫休息';
@@ -127,44 +120,51 @@ createApp({
 
         const toggleTimer = () => {
             if (isRunning.value) {
-                // 暫停：不清除 sessionStartTime，讓圖表保留
+                // [暫停]
                 clearInterval(timerInterval);
                 isRunning.value = false;
-                // 更新一下圖表確保暫停時長條還在
+                targetEndTime = null; // 清除目標時間
                 updateCharts('none');
             } else {
-                // 開始：如果是新的一輪（沒有開始時間），就記錄現在時間
+                // [開始]
                 if (!sessionStartTime.value && currentMode.value === 'focus') {
                     const now = new Date();
                     sessionStartTime.value = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
                 }
 
+                // [重點修正] 計算「絕對目標時間」 = 現在時間 + 剩餘秒數
+                // 這樣就算瀏覽器休眠，醒來後用 (目標 - 現在) 就能算出正確剩餘時間
+                targetEndTime = Date.now() + (timeLeft.value * 1000);
+
                 isRunning.value = true;
                 timerInterval = setInterval(() => {
-                    if (timeLeft.value > 0) {
-                        timeLeft.value--;
+                    // 每一秒重新計算剩餘時間，而不是單純 -1
+                    const now = Date.now();
+                    const remaining = Math.ceil((targetEndTime - now) / 1000);
+
+                    if (remaining > 0) {
+                        timeLeft.value = remaining;
                         
-                        // 專注模式下更新圖表
                         if (currentMode.value === 'focus') {
                             updateCharts('none');
                         }
-
                     } else {
+                        timeLeft.value = 0;
                         handleTimerComplete();
                     }
-                }, 1000);
+                }, 1000); // 這裡雖然還是 1000，但因為內部邏輯是靠 Date.now() 校正，所以不會變慢
             }
         };
 
         const handleTimerComplete = () => {
             clearInterval(timerInterval);
             isRunning.value = false;
+            targetEndTime = null;
             
             const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
             audio.play().catch(e => console.log('Autoplay prevented'));
 
             if (currentMode.value === 'focus') {
-                // 紀錄完整的 25 分鐘
                 recordFocusSession(25); 
 
                 if (cycleCount.value < 4) {
@@ -182,7 +182,6 @@ createApp({
                 
                 currentMode.value = 'focus';
                 timeLeft.value = TIMES.FOCUS;
-                // 切換回專注時，重置開始時間，確保下次產生新長條
                 sessionStartTime.value = null;
                 alert('休息結束，開始新的一輪！');
             }
@@ -191,16 +190,18 @@ createApp({
         const skipPhase = () => {
             clearInterval(timerInterval);
             isRunning.value = false;
+            targetEndTime = null;
             
             if (currentMode.value === 'focus') {
-                // 跳過時，計算已經專注了多久，並存檔
+                // 因為現在使用 targetEndTime，跳過時要反推經過了多久
+                // 用 (總時間 - 剩餘時間) 來計算
                 const elapsedSeconds = TIMES.FOCUS - timeLeft.value;
                 const elapsedMinutes = parseFloat((elapsedSeconds / 60).toFixed(1));
                 
                 if (elapsedMinutes > 0) {
                     recordFocusSession(elapsedMinutes);
                 } else {
-                    sessionStartTime.value = null; // 沒專注就直接重置
+                    sessionStartTime.value = null;
                 }
 
                 currentMode.value = 'short-break';
@@ -208,7 +209,7 @@ createApp({
             } else {
                 currentMode.value = 'focus';
                 timeLeft.value = TIMES.FOCUS;
-                sessionStartTime.value = null; // 新的專注開始
+                sessionStartTime.value = null;
             }
             updateCharts();
         };
@@ -315,15 +316,12 @@ createApp({
                 const labels = dailySessions.value.map(s => s.time);
                 const data = dailySessions.value.map(s => s.duration);
 
-                // [修正後的即時顯示邏輯]
-                // 只要是專注模式，且不是「未開始」狀態（timeLeft < 25分），就顯示臨時長條
-                // 這樣即使 isRunning 為 false (暫停)，長條依然會顯示
-                if (currentMode.value === 'focus' && timeLeft.value < TIMES.FOCUS) {
+                // 即時長條效果 (這部分也會因為時間校正而自動變得準確)
+                if (isRunning.value && currentMode.value === 'focus') {
                     const elapsedSeconds = TIMES.FOCUS - timeLeft.value;
                     const elapsedMinutes = parseFloat((elapsedSeconds / 60).toFixed(1));
                     
                     if (elapsedMinutes > 0) {
-                        // 使用 sessionStartTime 作為標籤，確保它是固定的
                         const label = (sessionStartTime.value || '...') + ' (進行中)';
                         labels.push(label);
                         data.push(elapsedMinutes);
