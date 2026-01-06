@@ -24,8 +24,31 @@
         <div class="card clock-card">
             <div class="clock-time">{{ currentTime }}</div>
             <div class="clock-date">{{ currentDate }}</div>
-            <div class="tag">目前時刻</div>
+            <div class="tag">本地時間</div>
         </div>
+
+        <div class="card schedule-card">
+            <h3>待辦事項</h3>
+            <div class="input-group">
+                <input type="text" v-model="newTaskInput" @keyup.enter="addTask" placeholder="輸入任務...">
+                <button @click="addTask">＋</button>
+            </div>
+            <ul class="task-list">
+                <li v-for="task in tasks" :key="task.id" :class="{ completed: task.done }">
+                    <label class="checkbox-container">
+                        <input type="checkbox" v-model="task.done" @change="saveTasks">
+                        <span class="checkmark"></span>
+                        <span class="task-text">{{ task.text }}</span>
+                    </label>
+                    <button class="delete-btn" @click="removeTask(task.id)">✕</button>
+                </li>
+                <li v-if="tasks.length === 0" class="empty-state">無任務</li>
+            </ul>
+        </div>
+
+        <button class="btn-danger" @click="clearHistory">
+            🗑️ 清除所有統計數據
+        </button>
 
         <div class="card network-card">
             <div class="status-header">
@@ -36,71 +59,53 @@
                 <span class="latency-num">{{ latency }}</span>
                 <span class="latency-unit">ms</span>
             </div>
-            <div class="tag">網路監測</div>
+            <div class="latency-info">
+                <div>Server: echo.websocket.org</div>
+                <div>Basis: RTT (Round-Trip)</div>
+            </div>
         </div>
     </aside>
 
     <main class="main-content">
         
         <section class="timer-section">
-            <div class="cycle-status">
-                <span class="cycle-label">循環進度 (第 {{ cycleCount }}/4 輪)</span>
-                <div class="dots">
-                    <span v-for="n in 4" :class="{ active: n <= cycleCount }" class="dot"></span>
+            <div class="timer-content">
+                <div class="cycle-status">
+                    <span class="cycle-label">循環進度 ({{ cycleCount }}/4)</span>
+                    <div class="dots">
+                        <span v-for="n in 4" :class="{ active: n <= cycleCount }" class="dot"></span>
+                    </div>
                 </div>
-            </div>
 
-            <div class="timer-ring-container">
-                <div class="glow-ring" :class="[isRunning ? 'active' : '', currentMode]"></div>
-                <div class="timer-number">{{ formatTime }}</div>
-            </div>
-            
-            <div class="status-badge" :class="currentMode">{{ modeText }}</div>
-
-            <div class="controls">
-                <button class="btn-primary" @click="toggleTimer">{{ isRunning ? '暫停' : '開始' }}</button>
-                <button class="btn-ghost" @click="skipPhase">跳過 (保存進度)</button>
-            </div>
-        </section>
-
-        <section class="schedule-section">
-            <div class="schedule-card">
-                <h3>待辦事項清單</h3>
+                <div class="timer-ring-container">
+                    <div class="glow-ring" :class="[isRunning ? 'active' : '', currentMode]"></div>
+                    <div class="timer-number">{{ formatTime }}</div>
+                </div>
                 
-                <div class="input-group">
-                    <input type="text" v-model="newTaskInput" @keyup.enter="addTask" placeholder="輸入任務目標...">
-                    <button @click="addTask">＋</button>
-                </div>
+                <div class="status-badge" :class="currentMode">{{ modeText }}</div>
 
-                <ul class="task-list">
-                    <li v-for="task in tasks" :key="task.id" :class="{ completed: task.done }">
-                        <label class="checkbox-container">
-                            <input type="checkbox" v-model="task.done" @change="saveTasks">
-                            <span class="checkmark"></span>
-                            <span class="task-text">{{ task.text }}</span>
-                        </label>
-                        <button class="delete-btn" @click="removeTask(task.id)">✕</button>
-                    </li>
-                    <li v-if="tasks.length === 0" class="empty-state">目前無任務，請新增一項以保持專注。</li>
-                </ul>
+                <div class="controls">
+                    <button class="btn-primary" @click="toggleTimer">{{ isRunning ? '暫停' : '開始' }}</button>
+                    <button class="btn-ghost" @click="skipPhase">跳過</button>
+                </div>
             </div>
         </section>
 
-        <section class="stats-section">
-            <div class="stats-card">
+        <div class="bottom-row">
+            <div class="chart-card">
                 <h3>過去 7 天專注時長</h3>
                 <div class="chart-wrapper">
                     <canvas id="weeklyChart"></canvas>
                 </div>
             </div>
             
-            <div class="stats-card">
+            <div class="chart-card">
                 <h3>今日專注分佈 (每5分鐘)</h3>
                 <div class="chart-wrapper">
                     <canvas id="dailyChart"></canvas>
                 </div>
             </div>
-        </section>
+        </div>
 
     </main>
 </div>
