@@ -1,236 +1,207 @@
-/* --- 1. 全域變數 --- */
+/* =========================================
+   1. 變數與基礎設定 (Variables & Base)
+   ========================================= */
 :root {
-    --bg-app: #121212;
-    --bg-surface: #1e1e1e;
-    --bg-sidebar: #181818;
-    --primary: #bb86fc;
-    --secondary: #03dac6;
-    --danger: #cf6679;
-    --text-main: #e0e0e0;
-    --text-dim: #a0a0a0;
-    --border: #333333;
-    --input-bg: #2d2d2d;
+    --primary-purple: #bb86fc;
+    --secondary-teal: #03dac6;
+    --bg-dark: #09090b;
+    --sidebar-dark: #111113;
+    --input-bg: #1f1f22;
 }
-
-* { box-sizing: border-box; }
 
 body {
-    font-family: 'Noto Sans TC', sans-serif;
-    background-color: #000;
-    color: var(--text-main);
-    margin: 0;
-    height: 100vh;
-    width: 100vw;
-    /* 允許視窗真的太小的時候出現捲軸，保護內容 */
-    overflow: auto; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background-color: var(--bg-dark);
+    font-family: 'Microsoft JhengHei', 'Inter', system-ui, sans-serif;
+    letter-spacing: 0.02em; 
 }
 
-/* --- 2. 主容器 --- */
-.app-container {
-    background-color: var(--bg-app);
-    width: 96%;
-    max-width: 1280px; /* 稍微縮小最大寬度，更聚攏 */
-    
-    /* [調整] 高度設為 90vh，保留上下邊距，看起來更有懸浮感 */
-    height: 90vh; 
-    
-    /* [安全鎖] 最小高度設為 700px，確保內容不會被擠扁 */
-    min-height: 700px; 
-    min-width: 900px;  
-    
-    border-radius: 20px;
-    display: flex;
-    border: 1px solid var(--border);
-    box-shadow: 0 0 30px rgba(0,0,0, 0.8);
-    
-    overflow: hidden; 
+/* 工具類 */
+.min-h-0 { min-height: 0; }
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.hover-white:hover { color: #fff !important; }
+
+/* =========================================
+   2. 側邊欄與卡片 (Sidebar & Cards)
+   ========================================= */
+.bg-sidebar { background-color: var(--sidebar-dark); }
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
-/* --- 左側：側邊欄 --- */
-.sidebar { 
-    width: 280px; /* 回歸標準寬度 */
-    background-color: var(--bg-sidebar); 
-    padding: 20px; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 15px; 
-    border-right: 1px solid var(--border); 
-    flex-shrink: 0; 
-    overflow-y: auto; 
+/* Logo 特效 */
+.brand-title {
+    font-size: 1.8rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--primary-purple), #7c4dff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 8px rgba(187, 134, 252, 0.5));
+    letter-spacing: 0.05em;
+    line-height: 1.2;
 }
 
-/* --- 右側：主內容區 --- */
-.main-content {
-    flex: 1; 
-    padding: 25px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px; /* 間距縮小，更緊湊 */
-    background-image: radial-gradient(circle at top right, rgba(187,134,252,0.05) 0%, transparent 40%);
-    
-    min-width: 0; 
-    overflow: hidden;
+/* 時間卡片特效 */
+.time-card-glow {
+    border: 1px solid rgba(187, 134, 252, 0.3) !important;
+    box-shadow: 0 0 15px rgba(187, 134, 252, 0.15), inset 0 0 20px rgba(187, 134, 252, 0.05);
+    transition: all 0.3s ease;
+}
+.time-card-glow:hover {
+    box-shadow: 0 0 25px rgba(187, 134, 252, 0.25), inset 0 0 10px rgba(187, 134, 252, 0.1);
+    border-color: rgba(187, 134, 252, 0.5) !important;
+}
+.time-digits {
+    background: linear-gradient(180deg, #fff, #e0cffc);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 15px rgba(187, 134, 252, 0.6);
 }
 
-/* --- 元件樣式 --- */
+/* =========================================
+   3. 任務列表元件 (Task List)
+   ========================================= */
+.custom-input {
+    background-color: var(--input-bg) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    color: #eee !important;
+    padding: 8px 12px;
+}
+.custom-input:focus { box-shadow: 0 0 0 1px var(--primary-purple) !important; }
+.custom-input::placeholder { color: #666; }
 
-/* Brand */
-.brand { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; flex-shrink: 0; }
-.logo-box { width: 32px; height: 32px; background: linear-gradient(135deg, var(--primary), #8a4af3); color: #000; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem; }
-.brand h1 { font-size: 1.1rem; margin: 0; letter-spacing: 1px; }
-
-/* 通用卡片 */
-.card { background-color: var(--bg-surface); padding: 12px; border-radius: 12px; border: 1px solid var(--border); flex-shrink: 0; }
-.tag { font-size: 0.7rem; color: var(--primary); background: rgba(187, 134, 252, 0.1); padding: 3px 8px; border-radius: 4px; display: inline-block; margin-top: 8px; }
-h3 { margin: 0 0 10px 0; font-size: 0.85rem; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
-
-/* 1. 時鐘卡片 */
-.clock-card { text-align: center; }
-.clock-time { font-family: 'JetBrains Mono', monospace; font-size: 2rem; font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
-.clock-date { font-size: 0.85rem; color: var(--text-dim); }
-
-/* 2. 待辦事項清單 */
-.schedule-card {
-    flex: 1; 
-    display: flex;
-    flex-direction: column;
-    min-height: 150px; 
-    overflow: hidden;
+.btn-add-task {
+    width: 38px; height: 38px;
+    border: 1px solid #666; border-radius: 8px;
+    background: transparent; color: var(--primary-purple);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+}
+.btn-add-task:hover {
+    border-color: var(--primary-purple); background: rgba(187, 134, 252, 0.1); color: #fff;
 }
 
-.input-group { display: flex; gap: 8px; margin-bottom: 10px; flex-shrink: 0; height: 36px; }
-.input-group input { flex: 1; background: var(--input-bg); border: 1px solid var(--border); padding: 0 10px; border-radius: 6px; color: white; outline: none; font-size: 0.9rem; min-width: 0; }
-.input-group button { background: #333; color: var(--primary); border: 1px solid var(--border); width: 36px; border-radius: 6px; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-
-.task-list { 
-    list-style: none; padding: 0; margin: 0; 
-    flex: 1; 
-    overflow-y: auto; 
-    padding-right: 5px;
+.task-item {
+    border-bottom: 1px solid rgba(255,255,255,0.08); padding: 10px 0;
+    transition: background-color 0.2s; cursor: pointer;
 }
-.task-list::-webkit-scrollbar { width: 4px; }
-.task-list::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+.task-item:last-child { border-bottom: none; }
 
-.task-list li { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #2d2d2d; }
-.checkbox-container { display: flex; align-items: center; cursor: pointer; position: relative; padding-left: 26px; width: 100%; overflow: hidden; }
-.checkbox-container input { position: absolute; opacity: 0; cursor: pointer; }
-.checkmark { position: absolute; top: 0; left: 0; height: 16px; width: 16px; background-color: #333; border-radius: 4px; }
-.checkbox-container:hover input ~ .checkmark { background-color: #444; }
-.checkbox-container input:checked ~ .checkmark { background-color: var(--primary); }
-.checkbox-container input:checked ~ .checkmark:after { display: block; }
-.checkmark:after { content: ""; position: absolute; display: none; left: 5px; top: 2px; width: 4px; height: 8px; border: solid black; border-width: 0 2px 2px 0; transform: rotate(45deg); }
-.task-text { font-size: 0.9rem; margin-left: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.completed .task-text { text-decoration: line-through; color: var(--text-dim); }
-.delete-btn { background: transparent; border: none; color: #555; cursor: pointer; font-size: 0.9rem; flex-shrink: 0; }
-.delete-btn:hover { color: #cf6679; }
-.empty-state { text-align: center; color: #555; font-style: italic; margin-top: 15px; font-size: 0.8rem; }
-
-/* 按鈕 */
-.btn-danger { background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 8px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: 0.2s; width: 100%; margin-top: 5px; flex-shrink: 0; }
-.btn-danger:hover { background: rgba(207, 102, 121, 0.1); }
-
-/* 3. 網路監測 */
-.network-card { margin-top: auto; flex-shrink: 0; }
-.status-header { display: flex; align-items: center; gap: 8px; margin-bottom: 5px;}
-.latency-num { font-size: 1.3rem; font-weight: bold; font-family: 'JetBrains Mono'; }
-.latency-info { font-size: 0.7rem; color: #666; font-family: 'JetBrains Mono'; border-top: 1px solid #333; padding-top: 5px; margin-top: 5px; }
-
-/* --- 右側主內容元件 --- */
-
-/* 計時器區塊 */
-.timer-section { 
-    /* [關鍵調整] 不再強制 400px，改為自動適應內容，並縮小內距 */
-    flex: 0 0 auto; 
-    
-    background: var(--bg-surface); 
-    border-radius: 12px; 
-    border: 1px solid var(--border); 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    padding: 15px; /* 縮小內距 */
-    flex-shrink: 0; 
+.custom-checkbox {
+    width: 20px; height: 20px; border-radius: 4px;
+    background-color: #2a2a2d; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; flex-shrink: 0;
 }
-.timer-content { display: flex; flex-direction: column; align-items: center; width: 100%; }
-
-/* [關鍵調整] 圓圈縮小至 180px，模擬 90% 縮放的效果 */
-.timer-ring-container { 
-    position: relative; 
-    width: 180px; 
-    height: 180px; 
-    margin: 10px 0; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
+.custom-checkbox i {
+    font-size: 14px; color: transparent; transform: scale(0.5); transition: all 0.2s;
 }
-.glow-ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 4px solid #2d2d2d; transition: 0.5s; }
-.glow-ring.active.focus { border-color: var(--primary); box-shadow: 0 0 25px var(--primary); }
-.glow-ring.active.short-break { border-color: var(--secondary); box-shadow: 0 0 25px var(--secondary); }
+.task-done .custom-checkbox { background-color: var(--primary-purple); }
+.task-done .custom-checkbox i { color: #000; transform: scale(1); }
 
-/* [關鍵調整] 字體縮小，確保不出圈 */
-.timer-number { font-size: 3.2rem; font-weight: 700; font-family: 'JetBrains Mono'; z-index: 2; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; text-align: center; }
+.task-text { color: #ccc; font-size: 0.95rem; transition: color 0.2s; }
+.task-done .task-text { text-decoration: line-through; color: #666; }
 
-.cycle-status { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; }
-.cycle-label { font-size: 0.8rem; color: var(--text-dim); }
-.dots { display: flex; gap: 5px; }
-.dot { width: 6px; height: 6px; background: #333; border-radius: 50%; }
-.dot.active { background: var(--secondary); box-shadow: 0 0 5px var(--secondary); }
-.status-badge { padding: 4px 12px; border-radius: 50px; font-size: 0.8rem; margin: 10px 0; border: 1px solid var(--border); }
-.status-badge.focus { color: var(--primary); border-color: var(--primary); }
+.btn-delete-task {
+    color: #444; background: none; border: none; font-size: 1.2rem;
+    padding: 0 5px; transition: color 0.2s;
+}
+.btn-delete-task:hover { color: #d32f2f; }
 
-.controls button { margin: 0 8px; padding: 10px 30px; border-radius: 8px; border: none; cursor: pointer; font-family: inherit; font-size: 0.95rem; transition: 0.2s; }
-.btn-primary { background: var(--primary); color: #000; font-weight: bold; }
-.btn-primary:hover { opacity: 0.9; transform: scale(1.05); }
-.btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
-.btn-ghost:hover { border-color: var(--text-main); color: var(--text-main); }
-
-/* 下半部圖表 */
-.bottom-row {
-    flex: 1; /* 吃掉剩下的所有空間 */
-    min-height: 250px; /* 給一個合理的最小值 */
-    
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    
-    min-width: 0;
-    overflow: hidden;
+/* =========================================
+   4. 計時器與動畫 (Timer & Animation)
+   ========================================= */
+.timer-display-container {
+    position: relative; container-type: size; 
+    width: 32vh; height: 32vh;
+    max-width: 300px; max-height: 300px;
+    min-width: 200px; min-height: 200px;
+    margin: 0 auto;
+}
+.timer-number-responsive {
+    font-size: 24cqw; line-height: 1; font-weight: 700; font-family: monospace; color: #fff;
+}
+.timer-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+.timer-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 6; }
+.timer-static-glow {
+    fill: none; stroke-width: 6; stroke-linecap: round;
+    stroke-dasharray: 753; stroke-dashoffset: 0; 
+    filter: drop-shadow(0 0 8px var(--primary-purple)); opacity: 0.8;
+}
+.timer-content {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); width: 100%;
+    display: flex; flex-direction: column; align-items: center;
 }
 
-.chart-card { 
-    background: var(--bg-surface); 
-    border-radius: 12px; 
-    border: 1px solid var(--border); 
-    padding: 15px; 
-    display: flex; 
-    flex-direction: column;
-    min-width: 0; 
-    min-height: 0;
+.cycle-dot {
+    width: 8px; height: 8px; background-color: rgba(255,255,255,0.2); border-radius: 50%; transition: all 0.3s;
+}
+.cycle-dot.active { background: var(--secondary-teal); box-shadow: 0 0 8px var(--secondary-teal); }
+
+/* 背景動畫 */
+.glow-sphere-1 {
+    position: absolute; top: -10%; right: -5%; width: 50vw; height: 50vw;
+    background: radial-gradient(circle, var(--primary-purple) 0%, transparent 60%);
+    opacity: 0.08; pointer-events: none; z-index: 0;
+}
+.glow-sphere-2 {
+    position: absolute; bottom: -10%; left: -5%; width: 40vw; height: 40vw;
+    background: radial-gradient(circle, var(--secondary-teal) 0%, transparent 60%);
+    opacity: 0.06; pointer-events: none; z-index: 0;
 }
 
-.chart-wrapper { 
-    flex: 1; 
-    position: relative; 
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    overflow: hidden; 
+/* =========================================
+   5. 圖表與進度條 (Charts & Progress)
+   ========================================= */
+.chart-container-wrapper { position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 12px; }
+canvas { width: 100% !important; height: 100% !important; }
+
+.progress-bar-container {
+    height: 12px; background-color: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden;
+}
+.custom-progress-bar {
+    height: 100%; background: linear-gradient(90deg, var(--secondary-teal), #00a896);
+    box-shadow: 0 0 10px rgba(3, 218, 198, 0.5); transition: width 1s linear; 
 }
 
-/* RWD: 只在手機寬度切換 */
-@media (max-width: 768px) {
-    body { height: auto; overflow: auto; display: block; }
-    .app-container { width: 100%; height: auto; flex-direction: column; border: none; border-radius: 0; overflow: visible; min-width: 0; min-height: 0; }
-    .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; padding: 15px; height: auto; }
-    .sidebar .card { flex: 1; min-width: 150px; }
-    .schedule-card { min-width: 100% !important; height: 300px; order: 3; }
-    .btn-danger { order: 4; }
-    .main-content { overflow: visible; height: auto; }
-    .bottom-row { grid-template-columns: 1fr; height: auto; }
-    .chart-wrapper { min-height: 250px; }
+/* =========================================
+   6. 手機版 RWD 優化 (Mobile Optimization)
+   ========================================= */
+
+/* 電腦版：鎖定捲動，打造戰情室感 */
+@media (min-width: 992px) {
+    body { overflow: hidden; }
+    .mobile-main-height { height: 100%; }
+    .mobile-sidebar-height { height: 100%; }
+}
+
+/* 手機版：允許捲動，調整高度 */
+@media (max-width: 991.98px) {
+    body {
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    .mobile-main-height {
+        min-height: 80vh; /* 計時器至少佔 80% 高度 */
+    }
+    .mobile-sidebar-height {
+        height: auto;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        border-right: none !important;
+    }
+    /* 放大計時器，讓手機好點 */
+    .timer-display-container {
+        width: 60vw; height: 60vw;
+    }
+    .brand-title {
+        font-size: 1.5rem;
+    }
 }
